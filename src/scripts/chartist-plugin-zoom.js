@@ -16,6 +16,10 @@
 
         return function zoom(chart) {
 
+            if (!(chart instanceof Chartist.Line)) {
+                return;
+            }
+            
             var rect, svg, axisX, axisY, chartRect;
             var downPosition;
             var onZoom = options.onZoom;
@@ -30,87 +34,85 @@
             });
             
             chart.on('created', function (data) {
-                if (chart instanceof Chartist.Line) {
-                    axisX = data.axisX;
-                    axisY = data.axisY;
-                    chartRect = data.chartRect;
-                    svg = data.svg._node;                    
-                    rect = data.svg.elem('rect', {
-                        x: 10,
-                        y: 10,
-                        width: 100,
-                        height: 100,
-                    }, 'ct-zoom-rect');
-                    hide(rect);
-                
-                    var defs = data.svg.querySelector('defs') || data.svg.elem('defs');
-                    var width = chartRect.width();
-                    var height  = chartRect.height();
-    
-                    defs
-                    .elem('clipPath', {
-                        x: chartRect.x1,
-                        y: chartRect.y2,
-                        width: width,
-                        height: height,
-                        id: 'zoom-mask'
-                    })
-                    .elem('rect', {
-                        x: chartRect.x1,
-                        y: chartRect.y2,
-                        width: width,
-                        height: height,
-                        fill: 'white'
-                    });
-                    
-                    chart.container.addEventListener('mousedown', function (event) {
-                        if (event.button === 0) {
-                            downPosition = position(event, svg);
-                            rect.attr(getRect(downPosition, downPosition));
-                            show(rect);
-                            event.preventDefault();
-                        }
-                    });
-        
-                    var reset = function() {
-                        chart.options.axisX.highLow = null;
-                        chart.options.axisY.highLow = null;
+                axisX = data.axisX;
+                axisY = data.axisY;
+                chartRect = data.chartRect;
+                svg = data.svg._node;                    
+                rect = data.svg.elem('rect', {
+                    x: 10,
+                    y: 10,
+                    width: 100,
+                    height: 100,
+                }, 'ct-zoom-rect');
+                hide(rect);
+            
+                var defs = data.svg.querySelector('defs') || data.svg.elem('defs');
+                var width = chartRect.width();
+                var height  = chartRect.height();
+
+                defs
+                .elem('clipPath', {
+                    x: chartRect.x1,
+                    y: chartRect.y2,
+                    width: width,
+                    height: height,
+                    id: 'zoom-mask'
+                })
+                .elem('rect', {
+                    x: chartRect.x1,
+                    y: chartRect.y2,
+                    width: width,
+                    height: height,
+                    fill: 'white'
+                });
+            });
+            
+            chart.container.addEventListener('mousedown', function (event) {
+                if (event.button === 0) {
+                    downPosition = position(event, svg);
+                    rect.attr(getRect(downPosition, downPosition));
+                    show(rect);
+                    event.preventDefault();
+                }
+            });
+
+            var reset = function() {
+                chart.options.axisX.highLow = null;
+                chart.options.axisY.highLow = null;
+                chart.update(chart.data, chart.options);
+            };
+            
+            chart.container.addEventListener('mouseup', function (event) {
+                if (event.button === 0) {
+                    var box = getRect(downPosition, position(event, svg));
+                    if (box.width > 5 && box.height > 5) {
+                        var x1 = box.x - chartRect.x1;
+                        var x2 = x1 + box.width;
+                        var y2 = chartRect.y1 - box.y;
+                        var y1 = y2 - box.height;
+
+                        chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
+                        chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
+                        
                         chart.update(chart.data, chart.options);
-                    };
+                        onZoom && onZoom(reset);
+                    }                            
                     
-                    chart.container.addEventListener('mouseup', function (event) {
-                        if (event.button === 0) {
-                            var box = getRect(downPosition, position(event, svg));
-                            if (box.width > 5 && box.height > 5) {
-                                var x1 = box.x - chartRect.x1;
-                                var x2 = x1 + box.width;
-                                var y2 = chartRect.y1 - box.y;
-                                var y1 = y2 - box.height;
-        
-                                chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
-                                chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
-                                
-                                chart.update(chart.data, chart.options);
-                                onZoom && onZoom(reset);
-                            }                            
-                            
-                            downPosition = null;
-                            hide(rect);
-                            event.preventDefault();
-                        }
-                        else if (event.button === 2) {
-                            reset();
-                            event.preventDefault();
-                        }
-                    });
-        
-                    chart.container.addEventListener('mousemove', function (event) {                    
-                        if (downPosition) {
-                            var point = position(event, svg);
-                            rect.attr(getRect(downPosition, point));
-                            event.preventDefault();
-                        }
-                    });
+                    downPosition = null;
+                    hide(rect);
+                    event.preventDefault();
+                }
+                else if (event.button === 2) {
+                    reset();
+                    event.preventDefault();
+                }
+            });
+
+            chart.container.addEventListener('mousemove', function (event) {                    
+                if (downPosition) {
+                    var point = position(event, svg);
+                    rect.attr(getRect(downPosition, point));
+                    event.preventDefault();
                 }
             });
         };
@@ -161,7 +163,7 @@
         point.x = x;
         point.y = y;
         point = point.matrixTransform(matrix.inverse());
-        return point;
+        return point || { x: 0, y: 0 };
     }
 
     function project(value, axis) {

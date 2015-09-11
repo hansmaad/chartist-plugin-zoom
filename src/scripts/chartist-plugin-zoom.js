@@ -31,6 +31,35 @@
                     height: 100,
                 }, 'ct-zoom-rect');
                 hide(rect);
+               
+                var defs = data.svg.querySelector('defs') || data.svg.elem('defs');
+                var width = chartRect.width();
+                var height  = chartRect.height();
+
+                defs
+                .elem('clipPath', {
+                    x: chartRect.x1,
+                    y: chartRect.y2,
+                    width: width,
+                    height: height,
+                    id: 'zoom-mask'
+                })
+                .elem('rect', {
+                    x: chartRect.x1,
+                    y: chartRect.y2,
+                    width: width,
+                    height: height,
+                    fill: 'white'
+                });
+            });
+            
+            chart.on('draw', function(data) {
+                var type = data.type;
+                if (type === 'line' || type === 'bar' || type === 'area' || type === 'point') {
+                    data.element.attr({
+                        'clip-path': 'url(#zoom-mask)'
+                    });
+                }
             });
 
             chart.container.addEventListener('mousedown', function (event) {

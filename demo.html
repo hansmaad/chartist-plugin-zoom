@@ -13,6 +13,7 @@
 <body>
 	<h1>Chartist Zoom Plugin</h1>
 	<p>Use left mouse button to drag a zoom box. Reset zoom with right mouse button.</p>
+	<p><a id="reset" href="#" style="display:none" onclick='return reset()'>Reset</a></p>
 	<div class="ct-chart ct-golden-section"></div>
 	
 	<script src="bower_components/chartist/dist/chartist.js"></script>
@@ -39,10 +40,23 @@
 				type: Chartist.AutoScaleAxis
 			},
 			plugins : [
-				Chartist.plugins.zoom({})
+				Chartist.plugins.zoom({ onZoom : onZoom })
 			]
 		};
 		var chart = Chartist.Line('.ct-chart', data, options);
+		
+		var resetFnc;
+		function onZoom(reset) {
+			document.getElementById('reset').style.display = 'inline';
+			resetFnc = reset;					
+		}
+		
+		function reset() {
+			resetFnc && resetFnc();
+			resetFnc = null;
+			document.getElementById('reset').style.display = 'none';
+		}
+		
 	</script>
 </body>
 </html>

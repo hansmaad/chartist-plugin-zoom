@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>chartist zoom</title>
+  <link rel="stylesheet" href="bower_components/chartist/dist/chartist.min.css">
+  <style>
+	  .ct-zoom-rect {
+		  fill: rgba(200, 100, 100, 0.3);
+		  stroke: red;
+	  }
+  </style>
+</head>
+<body>
+	<h1>Chartist Zoom Plugin</h1>
+	<p>Use left mouse button to drag a zoom box. Reset zoom with right mouse button.</p>
+	<div class="ct-chart ct-golden-section"></div>
+	
+	<script src="bower_components/chartist/dist/chartist.js"></script>
+	<script src="dist/chartist-plugin-zoom.js"></script>
+
+	<script>
+		var data  = {
+			series: [[
+				{x: 1, y: 100},
+				{x: 2, y: 50},
+				{x: 3, y: 25},
+				{x: 4, y: 66},
+				{x: 5, y: 44},
+				{x: 6, y: 22},
+				
+			]]
+			};
+			
+			var options = {
+			axisX: {
+				type: Chartist.AutoScaleAxis
+			},
+			axisY: {
+				type: Chartist.AutoScaleAxis
+			},
+			plugins : [
+				Chartist.plugins.zoom({})
+			]
+		};
+		var chart = Chartist.Line('.ct-chart', data, options);
+	</script>
+</body>
+</html>

@@ -133,7 +133,7 @@
     function project(value, axis) {
         var max = axis.bounds.max;
         var min = axis.bounds.min;
-        if (axis.scale.type === 'log') {
+        if (axis.scale && axis.scale.type === 'log') {
             var base = axis.scale.base;
             return Math.pow(base,
                 value * baseLog(max / min, base) / axis.axisLength) * min;

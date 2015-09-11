@@ -7,6 +7,7 @@
 
     var defaultOptions = {
         // onZoom
+        // resetOnRightMouseBtn
     };
 
     Chartist.plugins = Chartist.plugins || {};
@@ -23,7 +24,7 @@
             var rect, svg, axisX, axisY, chartRect;
             var downPosition;
             var onZoom = options.onZoom;
-            
+
             chart.on('draw', function(data) {
                 var type = data.type;
                 if (type === 'line' || type === 'bar' || type === 'area' || type === 'point') {
@@ -52,10 +53,6 @@
 
                 defs
                 .elem('clipPath', {
-                    x: chartRect.x1,
-                    y: chartRect.y2,
-                    width: width,
-                    height: height,
                     id: 'zoom-mask'
                 })
                 .elem('rect', {
@@ -102,7 +99,7 @@
                     hide(rect);
                     event.preventDefault();
                 }
-                else if (event.button === 2) {
+                else if (options.resetOnRightMouseBtn && event.button === 2) {
                     reset();
                     event.preventDefault();
                 }

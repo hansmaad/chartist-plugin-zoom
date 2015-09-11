@@ -1,0 +1,148 @@
+/**
+ * Chartist.js zoom plugin.
+ *
+ */
+/* global Chartist */
+ (function (window, document, Chartist) {
+    'use strict';
+
+    var defaultOptions = {
+    };
+
+    Chartist.plugins = Chartist.plugins || {};
+    Chartist.plugins.zoom = function (options) {
+
+        options = Chartist.extend({}, defaultOptions, options);
+
+        return function zoom(chart) {
+
+            var rect, svg, axisX, axisY, chartRect;
+            var downPosition;
+            
+            chart.on('created', function (data) {
+                axisX = data.axisX;
+                axisY = data.axisY;
+                chartRect = data.chartRect;
+                svg = data.svg._node;                    
+                rect = data.svg.elem('rect', {
+                    x: 10,
+                    y: 10,
+                    width: 100,
+                    height: 100,
+                }, 'ct-zoom-rect');
+                hide(rect);
+            });
+
+            chart.container.addEventListener('mousedown', function (event) {
+                if (event.button === 0) {
+                    downPosition = position(event, svg);
+                    rect.attr(getRect(downPosition, downPosition));
+                    show(rect);
+                    event.preventDefault();
+                }
+            });
+
+            chart.container.addEventListener('mouseup', function (event) {
+                if (event.button === 0) {
+                    var box = getRect(downPosition, position(event, svg));
+                    if (box.width > 5 && box.height > 5) {
+                        var x1 = box.x - chartRect.x1;
+                        var x2 = x1 + box.width;
+                        var y2 = chartRect.y1 - box.y;
+                        var y1 = y2 - box.height;
+
+                        chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
+                        chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
+
+                        //console.log(chart.options.axisX.highLow);
+                        //console.log(chart.options.axisY.highLow);
+                        chart.update(chart.data, chart.options);
+                    }                            
+                    
+                    downPosition = null;
+                    hide(rect);
+                    event.preventDefault();
+                }
+                else if (event.button === 2) {
+                    chart.options.axisX.highLow = null;
+                    chart.options.axisY.highLow = null;
+                    chart.update(chart.data, chart.options);
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+
+            chart.container.addEventListener('mousemove', function (event) {                    
+                if (downPosition) {
+                    var point = position(event, svg);
+                    rect.attr(getRect(downPosition, point));
+                    event.preventDefault();
+                }
+            });
+        };
+
+        
+    };
+
+    function hide(rect) {
+        rect.attr({ style : 'display:none'});
+    }
+
+    function show(rect) {
+        rect.attr({ style: 'display:block' });
+    }
+
+    function getRect(firstPoint, secondPoint) {
+        var x = firstPoint.x;
+        var y = firstPoint.y;
+        var width = secondPoint.x - x;
+        var height = secondPoint.y - y;
+        if (width < 0) {
+            width = -width;
+            x = secondPoint.x;
+        }
+        if (height < 0) {
+            height = -height;
+            y = secondPoint.y;
+        }
+        return {
+            x: x,
+            y: y,
+            width: width,
+            height: height
+        };
+    }
+
+    function position(event, svg) {
+        var x = event.pageX;
+        var y = event.pageY;
+        return transform(x, y, svg);
+    }
+
+    function transform(x, y, svgElement) {
+        svgElement = svgElement;
+        var svg = svgElement.tagName === 'svg' ? svgElement : svgElement.ownerSVGElement;
+        var matrix = svgElement.getScreenCTM();
+        var point = svg.createSVGPoint();
+        point.x = x;
+        point.y = y;
+        point = point.matrixTransform(matrix.inverse());
+        return point;
+    }
+
+    function project(value, axis) {
+        var max = axis.bounds.max;
+        var min = axis.bounds.min;
+        if (axis.scale.type === 'log') {
+            var base = axis.scale.base;
+            return Math.pow(base,
+                value * baseLog(max / min, base) / axis.axisLength) * min;
+        }
+        return (value * axis.bounds.range / axis.axisLength) + min;                
+    }
+
+    function baseLog(val, base) {
+        return Math.log(val) / Math.log(base);
+    }
+
+} (window, document, Chartist));

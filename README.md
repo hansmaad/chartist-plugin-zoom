@@ -6,7 +6,7 @@ Please visit http://gionkunz.github.io/chartist-js/plugins.html for more informa
 
 ```javascript
 var defaultOptions = {
-  onZoom : undefined  // A callback (resetFnc) => void which will be called on zoom. 
+  onZoom : undefined  // A callback (chart, resetFnc) => void which will be called on zoom. 
                       // resetFnc() will reset zoom.
 };
 ```
@@ -22,7 +22,7 @@ var chart = new Chartist.Line('.ct-chart', {
   },
   plugins: [
     Chartist.plugins.zoom({
-      onZoom : function(reset) { storeReset(reset); };
+      onZoom : function(chart, reset) { storeReset(reset); };
     })
   ]
 });

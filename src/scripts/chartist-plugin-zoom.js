@@ -16,16 +16,16 @@
         options = Chartist.extend({}, defaultOptions, options);
 
         return function zoom(chart) {
-
+           
             if (!(chart instanceof Chartist.Line)) {
                 return;
             }
-            
+
             var rect, svg, axisX, axisY, chartRect;
             var downPosition;
             var onZoom = options.onZoom;
 
-            chart.on('draw', function(data) {
+            chart.on('draw', function (data) {
                 var type = data.type;
                 if (type === 'line' || type === 'bar' || type === 'area' || type === 'point') {
                     data.element.attr({
@@ -33,53 +33,55 @@
                     });
                 }
             });
-            
+
             chart.on('created', function (data) {
                 axisX = data.axisX;
                 axisY = data.axisY;
                 chartRect = data.chartRect;
-                svg = data.svg._node;                    
+                svg = data.svg._node;
                 rect = data.svg.elem('rect', {
-                    x: 10,
-                    y: 10,
-                    width: 100,
-                    height: 100,
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0,
                 }, 'ct-zoom-rect');
                 hide(rect);
-            
+
                 var defs = data.svg.querySelector('defs') || data.svg.elem('defs');
                 var width = chartRect.width();
-                var height  = chartRect.height();
+                var height = chartRect.height();
 
-                defs
-                .elem('clipPath', {
+                defs.elem('clipPath', {
                     id: 'zoom-mask'
-                })
-                .elem('rect', {
+                }).elem('rect', {
                     x: chartRect.x1,
                     y: chartRect.y2,
                     width: width,
                     height: height,
                     fill: 'white'
-                });
+                    });
+
+                svg.addEventListener('mousedown', onMouseDown);
+                svg.addEventListener('mouseup', onMouseUp);
+                svg.addEventListener('mousemove', onMouseMove);
             });
-            
-            chart.container.addEventListener('mousedown', function (event) {
+
+            function onMouseDown(event) {
                 if (event.button === 0) {
                     downPosition = position(event, svg);
                     rect.attr(getRect(downPosition, downPosition));
                     show(rect);
                     event.preventDefault();
                 }
-            });
+            }
 
-            var reset = function() {
+            var reset = function () {
                 chart.options.axisX.highLow = null;
                 chart.options.axisY.highLow = null;
                 chart.update(chart.data, chart.options);
             };
-            
-            chart.container.addEventListener('mouseup', function (event) {
+
+            function onMouseUp(event) {
                 if (event.button === 0) {
                     var box = getRect(downPosition, position(event, svg));
                     if (box.width > 5 && box.height > 5) {
@@ -90,11 +92,11 @@
 
                         chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
                         chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
-                        
+
                         chart.update(chart.data, chart.options);
                         onZoom && onZoom(reset);
-                    }                            
-                    
+                    }
+
                     downPosition = null;
                     hide(rect);
                     event.preventDefault();
@@ -103,22 +105,22 @@
                     reset();
                     event.preventDefault();
                 }
-            });
+            };
 
-            chart.container.addEventListener('mousemove', function (event) {                    
+            function onMouseMove(event) {
                 if (downPosition) {
                     var point = position(event, svg);
                     rect.attr(getRect(downPosition, point));
                     event.preventDefault();
                 }
-            });
+            };
         };
 
-        
+
     };
 
     function hide(rect) {
-        rect.attr({ style : 'display:none'});
+        rect.attr({ style: 'display:none' });
     }
 
     function show(rect) {
@@ -171,7 +173,7 @@
             return Math.pow(base,
                 value * baseLog(max / min, base) / axis.axisLength) * min;
         }
-        return (value * axis.bounds.range / axis.axisLength) + min;                
+        return (value * axis.bounds.range / axis.axisLength) + min;
     }
 
     function baseLog(val, base) {

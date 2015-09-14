@@ -149,15 +149,15 @@
     }
 
     function position(event, svg) {
-        var x = event.pageX;
-        var y = event.pageY;
+        var x = event.layerX;
+        var y = event.layerY;
         return transform(x, y, svg);
     }
 
     function transform(x, y, svgElement) {
         svgElement = svgElement;
         var svg = svgElement.tagName === 'svg' ? svgElement : svgElement.ownerSVGElement;
-        var matrix = svgElement.getScreenCTM();
+        var matrix = svgElement.getCTM();
         var point = svg.createSVGPoint();
         point.x = x;
         point.y = y;

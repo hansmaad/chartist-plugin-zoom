@@ -94,7 +94,7 @@
                         chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
 
                         chart.update(chart.data, chart.options);
-                        onZoom && onZoom(reset);
+                        onZoom && onZoom(chart, reset);
                     }
 
                     downPosition = null;

@@ -13,6 +13,7 @@ var defaultOptions = {
 
 ## Sample usage in Chartist.js
 
+    
 ```javascript
 var chart = new Chartist.Line('.ct-chart', {
   series: [/* */]
@@ -26,4 +27,12 @@ var chart = new Chartist.Line('.ct-chart', {
     })
   ]
 });
+```
+
+```css
+/* style the svg rect */
+.ct-zoom-rect {
+	fill: rgba(200, 100, 100, 0.3);
+  stroke: red;
+}
 ```

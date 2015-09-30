@@ -1,11 +1,10 @@
 {
-  "name": "chartist-zoom-pointlabels",
-  "version": "0.0.0",
+  "name": "chartist-plugin-zoom",
   "main": [
     "./dist/chartist-plugin-zoom.min.js"
   ],
   "dependencies": {
-    "chartist": "~0.9.0"
+    "chartist": "~0.9.4"
   },
   "ignore": [
     ".*",

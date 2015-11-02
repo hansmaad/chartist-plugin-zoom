@@ -41,6 +41,7 @@
         var rect, svg, axisX, axisY, chartRect;
         var downPosition;
         var onZoom = options.onZoom;
+        var ongoingTouches = [];
 
         chart.on('draw', function (data) {
           var type = data.type;
@@ -83,7 +84,78 @@
           svg.addEventListener('mousedown', onMouseDown);
           svg.addEventListener('mouseup', onMouseUp);
           svg.addEventListener('mousemove', onMouseMove);
+
+          svg.addEventListener('touchstart', onTouchStart);
+          svg.addEventListener('touchmove', onTouchMove);
+          svg.addEventListener('touchend', onTouchEnd);
+          svg.addEventListener('touchcancel', onTouchCancel);
         });
+
+        function copyTouch(touch) {
+          var p = transform(touch.pageX, touch.pageY, svg, true);
+          p.id = touch.identifier; 
+          return p;
+        }
+
+        function ongoingTouchIndexById(idToFind) {
+          for (var i = 0; i < ongoingTouches.length; i++) {
+            var id = ongoingTouches[i].id;
+            if (id === idToFind) {
+              return i;
+            }
+          }
+          return -1;
+        }
+
+        function onTouchStart(event) {
+          event.preventDefault();
+          var touches = event.changedTouches;
+          for (var i = 0; i < touches.length; i++) {
+            ongoingTouches.push(copyTouch(touches[i]));
+          }        
+
+          if (ongoingTouches.length > 1) {
+            rect.attr(getRect(ongoingTouches[0], ongoingTouches[1]));
+            show(rect);
+          }
+        }
+
+        function onTouchMove(event) {
+          var touches = event.changedTouches;        
+          for (var i = 0; i < touches.length; i++) {
+            var idx = ongoingTouchIndexById(touches[i].identifier);
+            ongoingTouches.splice(idx, 1, copyTouch(touches[i]));
+          }
+
+          if (ongoingTouches.length > 1) {
+            rect.attr(getRect(ongoingTouches[0], ongoingTouches[1]));
+            show(rect);
+          }
+        }
+
+        function onTouchCancel(event) {
+          event.preventDefault();        
+          removeTouches(event.changedTouches);        
+        }
+
+        function removeTouches(touches) {
+          for (var i = 0; i < touches.length; i++) {
+            var idx = ongoingTouchIndexById(touches[i].identifier);
+            if (idx >= 0) {
+              ongoingTouches.splice(idx, 1);
+            } 
+          }
+        }
+
+        function onTouchEnd(event) {
+          event.preventDefault();
+
+          if (ongoingTouches.length > 1) {
+            zoomIn(getRect(ongoingTouches[0], ongoingTouches[1]));
+          }
+          removeTouches(event.changedTouches);
+          hide(rect);
+        }
 
         function onMouseDown(event) {
           if (event.button === 0) {
@@ -103,18 +175,7 @@
         function onMouseUp(event) {
           if (event.button === 0) {
             var box = getRect(downPosition, position(event, svg));
-            if (box.width > 5 && box.height > 5) {
-              var x1 = box.x - chartRect.x1;
-              var x2 = x1 + box.width;
-              var y2 = chartRect.y1 - box.y;
-              var y1 = y2 - box.height;
-
-              chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
-              chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
-
-              chart.update(chart.data, chart.options);
-              onZoom && onZoom(chart, reset);
-            }
+            zoomIn(box);
 
             downPosition = null;
             hide(rect);
@@ -124,6 +185,21 @@
             reset();
             event.preventDefault();
           }
+        }
+
+        function zoomIn(rect) {
+          if (rect.width > 5 && rect.height > 5) {
+              var x1 = rect.x - chartRect.x1;
+              var x2 = x1 + rect.width;
+              var y2 = chartRect.y1 - rect.y;
+              var y1 = y2 - rect.height;
+
+              chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
+              chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
+
+              chart.update(chart.data, chart.options);
+              onZoom && onZoom(chart, reset);
+            }
         }
 
         function onMouseMove(event) {
@@ -172,10 +248,10 @@
       return transform(x, y, svg);
     }
 
-    function transform(x, y, svgElement) {
+    function transform(x, y, svgElement, screen) {
       svgElement = svgElement;
       var svg = svgElement.tagName === 'svg' ? svgElement : svgElement.ownerSVGElement;
-      var matrix = svgElement.getCTM();
+      var matrix = screen ? svgElement.getScreenCTM() : svgElement.getCTM();
       var point = svg.createSVGPoint();
       point.x = x;
       point.y = y;

@@ -75,7 +75,7 @@
       });
 
       function copyTouch(touch) {
-        var p = transform(touch.pageX, touch.pageY, svg, true);
+        var p = position(touch, svg);
         p.id = touch.identifier; 
         return p;
       }
@@ -223,8 +223,9 @@
   }
 
   function position(event, svg) {
-    var x = event.layerX;
-    var y = event.layerY;
+    var box = svg.getBoundingClientRect();
+    var x = event.clientX - box.left;
+    var y = event.clientY - box.top;
     return transform(x, y, svg);
   }
 

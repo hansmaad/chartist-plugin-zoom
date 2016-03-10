@@ -84,7 +84,6 @@
           svg.addEventListener('mousedown', onMouseDown);
           svg.addEventListener('mouseup', onMouseUp);
           svg.addEventListener('mousemove', onMouseMove);
-
           svg.addEventListener('touchstart', onTouchStart);
           svg.addEventListener('touchmove', onTouchMove);
           svg.addEventListener('touchend', onTouchEnd);
@@ -92,7 +91,7 @@
         });
 
         function copyTouch(touch) {
-          var p = transform(touch.pageX, touch.pageY, svg, true);
+          var p = position(touch, svg);
           p.id = touch.identifier; 
           return p;
         }
@@ -108,7 +107,6 @@
         }
 
         function onTouchStart(event) {
-          event.preventDefault();
           var touches = event.changedTouches;
           for (var i = 0; i < touches.length; i++) {
             ongoingTouches.push(copyTouch(touches[i]));
@@ -130,12 +128,12 @@
           if (ongoingTouches.length > 1) {
             rect.attr(getRect(ongoingTouches[0], ongoingTouches[1]));
             show(rect);
+            event.preventDefault();
           }
         }
 
         function onTouchCancel(event) {
-          event.preventDefault();        
-          removeTouches(event.changedTouches);        
+          removeTouches(event.changedTouches);
         }
 
         function removeTouches(touches) {
@@ -148,8 +146,6 @@
         }
 
         function onTouchEnd(event) {
-          event.preventDefault();
-
           if (ongoingTouches.length > 1) {
             zoomIn(getRect(ongoingTouches[0], ongoingTouches[1]));
           }
@@ -243,8 +239,9 @@
     }
 
     function position(event, svg) {
-      var x = event.layerX;
-      var y = event.layerY;
+      var box = svg.getBoundingClientRect();
+      var x = event.clientX - box.left;
+      var y = event.clientY - box.top;
       return transform(x, y, svg);
     }
 

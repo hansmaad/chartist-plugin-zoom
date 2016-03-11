@@ -155,8 +155,7 @@
       function onMouseUp(event) {
         if (event.button === 0) {
           var box = getRect(downPosition, position(event, svg));
-          zoomIn(box);
-
+          zoomIn(box);          
           downPosition = null;
           hide(rect);
           event.preventDefault();
@@ -223,16 +222,12 @@
   }
 
   function position(event, svg) {
-    var box = svg.getBoundingClientRect();
-    var x = event.clientX - box.left;
-    var y = event.clientY - box.top;
-    return transform(x, y, svg);
+    return transform(event.clientX, event.clientY, svg);
   }
 
-  function transform(x, y, svgElement, screen) {
-    svgElement = svgElement;
+  function transform(x, y, svgElement) {
     var svg = svgElement.tagName === 'svg' ? svgElement : svgElement.ownerSVGElement;
-    var matrix = screen ? svgElement.getScreenCTM() : svgElement.getCTM();
+    var matrix = svg.getScreenCTM();
     var point = svg.createSVGPoint();
     point.x = x;
     point.y = y;

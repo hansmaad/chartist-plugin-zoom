@@ -22,7 +22,7 @@
         return;
       }
 
-      var rect, svg, axisX, axisY, chartRect;
+      var rect, svg, axisX, axisY, chartRect, bounds;
       var downPosition;
       var onZoom = options.onZoom;
       var ongoingTouches = [];
@@ -39,6 +39,7 @@
       chart.on('created', function (data) {
         axisX = data.axisX;
         axisY = data.axisY;
+        bounds = data.bounds;
         chartRect = data.chartRect;
         svg = data.svg._node;
         rect = data.svg.elem('rect', {
@@ -173,8 +174,8 @@
             var y2 = chartRect.y1 - rect.y;
             var y1 = y2 - rect.height;
 
-            chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
-            chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
+            chart.options.axisX.highLow = { low: project(x1, axisX, bounds || axisX.bounds), high: project(x2, axisX, bounds || axisX.bounds) };
+            chart.options.axisY.highLow = { low: project(y1, axisY, bounds || axisY.bounds), high: project(y2, axisY, bounds || axisY.bounds) };
 
             chart.update(chart.data, chart.options);
             onZoom && onZoom(chart, reset);
@@ -235,15 +236,15 @@
     return point || { x: 0, y: 0 };
   }
 
-  function project(value, axis) {
-    var max = axis.bounds.max;
-    var min = axis.bounds.min;
+  function project(value, axis, bounds) {
+    var max = bounds.max;
+    var min = bounds.min;
     if (axis.scale && axis.scale.type === 'log') {
       var base = axis.scale.base;
       return Math.pow(base,
         value * baseLog(max / min, base) / axis.axisLength) * min;
     }
-    return (value * axis.bounds.range / axis.axisLength) + min;
+    return (value * bounds.range / axis.axisLength) + min;
   }
 
   function baseLog(val, base) {

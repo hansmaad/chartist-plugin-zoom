@@ -153,7 +153,7 @@
       };
 
       function onMouseUp(event) {
-        if (event.button === 0) {
+        if (event.button === 0 && downPosition) {
           var box = getRect(downPosition, position(event, svg));
           zoomIn(box);          
           downPosition = null;

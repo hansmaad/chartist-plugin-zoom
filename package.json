@@ -1,7 +1,7 @@
 {
   "name": "chartist-plugin-zoom",
   "description": "Zoom Plugin for Chartist.js",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Hannes Kamecke",
   "homepage": "https://gionkunz.github.io/chartist-js/plugins.html",
   "repository": {

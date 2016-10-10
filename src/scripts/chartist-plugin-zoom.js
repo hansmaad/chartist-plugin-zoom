@@ -52,15 +52,16 @@
         var defs = data.svg.querySelector('defs') || data.svg.elem('defs');
         var width = chartRect.width();
         var height = chartRect.height();
+        var widthOffset = 5;
 
         defs
           .elem('clipPath', {
             id: 'zoom-mask'
           })
           .elem('rect', {
-            x: chartRect.x1,
+            x: chartRect.x1 - widthOffset,
             y: chartRect.y2,
-            width: width,
+            width: width + (widthOffset * 2),
             height: height,
             fill: 'white'
           });

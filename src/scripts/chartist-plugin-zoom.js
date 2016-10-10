@@ -26,13 +26,12 @@
       var downPosition;
       var onZoom = options.onZoom;
       var ongoingTouches = [];
-      
+
       chart.on('draw', function (data) {
         var type = data.type;
+        var mask = type === 'point' ? 'point-mask' : 'line-mask';
         if (type === 'line' || type === 'bar' || type === 'area' || type === 'point') {
-          data.element.attr({
-            'clip-path': 'url(#zoom-mask)'
-          });
+          data.element.attr({ 'clip-path': 'url(#' + mask + ')' });
         }
       });
 
@@ -54,17 +53,21 @@
         var height = chartRect.height();
         var widthOffset = 5;
 
-        defs
-          .elem('clipPath', {
-            id: 'zoom-mask'
-          })
-          .elem('rect', {
-            x: chartRect.x1 - widthOffset,
-            y: chartRect.y2,
-            width: width + (widthOffset * 2),
-            height: height,
-            fill: 'white'
-          });
+        function addMask(id, offset) {
+          defs
+            .elem('clipPath', {
+              id: id
+            })
+            .elem('rect', {
+              x: chartRect.x1 - offset,
+              y: chartRect.y2 - offset,
+              width: width + offset + offset,
+              height: height + offset + offset,
+              fill: 'white'
+            });
+        }
+        addMask('line-mask', 0);
+        addMask('point-mask', widthOffset);
 
         svg.addEventListener('mousedown', onMouseDown);
         svg.addEventListener('mouseup', onMouseUp);
@@ -75,9 +78,11 @@
         svg.addEventListener('touchcancel', onTouchCancel);
       });
 
+
+
       function copyTouch(touch) {
         var p = position(touch, svg);
-        p.id = touch.identifier; 
+        p.id = touch.identifier;
         return p;
       }
 
@@ -95,41 +100,41 @@
         var touches = event.changedTouches;
         for (var i = 0; i < touches.length; i++) {
           ongoingTouches.push(copyTouch(touches[i]));
-        }        
-      
+        }
+
         if (ongoingTouches.length > 1) {
           rect.attr(getRect(ongoingTouches[0], ongoingTouches[1]));
           show(rect);
         }
       }
-      
+
       function onTouchMove(event) {
-        var touches = event.changedTouches;        
+        var touches = event.changedTouches;
         for (var i = 0; i < touches.length; i++) {
           var idx = ongoingTouchIndexById(touches[i].identifier);
           ongoingTouches.splice(idx, 1, copyTouch(touches[i]));
         }
-        
+
         if (ongoingTouches.length > 1) {
           rect.attr(getRect(ongoingTouches[0], ongoingTouches[1]));
           show(rect);
           event.preventDefault();
         }
       }
-      
+
       function onTouchCancel(event) {
         removeTouches(event.changedTouches);
       }
-      
+
       function removeTouches(touches) {
         for (var i = 0; i < touches.length; i++) {
           var idx = ongoingTouchIndexById(touches[i].identifier);
           if (idx >= 0) {
             ongoingTouches.splice(idx, 1);
-          } 
+          }
         }
       }
-      
+
       function onTouchEnd(event) {
         if (ongoingTouches.length > 1) {
           zoomIn(getRect(ongoingTouches[0], ongoingTouches[1]));
@@ -137,7 +142,7 @@
         removeTouches(event.changedTouches);
         hide(rect);
       }
-      
+
       function onMouseDown(event) {
         if (event.button === 0) {
           downPosition = position(event, svg);
@@ -156,7 +161,7 @@
       function onMouseUp(event) {
         if (event.button === 0 && downPosition) {
           var box = getRect(downPosition, position(event, svg));
-          zoomIn(box);          
+          zoomIn(box);
           downPosition = null;
           hide(rect);
           event.preventDefault();
@@ -166,7 +171,7 @@
           event.preventDefault();
         }
       }
-      
+
       function zoomIn(rect) {
         if (rect.width > 5 && rect.height > 5) {
             var x1 = rect.x - chartRect.x1;

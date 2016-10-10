@@ -8,6 +8,7 @@
   var defaultOptions = {
     // onZoom
     // resetOnRightMouseBtn
+    pointClipOffset: 5
   };
 
 
@@ -51,7 +52,6 @@
         var defs = data.svg.querySelector('defs') || data.svg.elem('defs');
         var width = chartRect.width();
         var height = chartRect.height();
-        var widthOffset = 5;
 
         function addMask(id, offset) {
           defs
@@ -67,7 +67,7 @@
             });
         }
         addMask('line-mask', 0);
-        addMask('point-mask', widthOffset);
+        addMask('point-mask', options.pointClipOffset);
 
         function on(event, handler) {
           svg.addEventListener(event, handler);

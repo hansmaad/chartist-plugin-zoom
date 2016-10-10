@@ -69,13 +69,17 @@
         addMask('line-mask', 0);
         addMask('point-mask', widthOffset);
 
-        svg.addEventListener('mousedown', onMouseDown);
-        svg.addEventListener('mouseup', onMouseUp);
-        svg.addEventListener('mousemove', onMouseMove);
-        svg.addEventListener('touchstart', onTouchStart);
-        svg.addEventListener('touchmove', onTouchMove);
-        svg.addEventListener('touchend', onTouchEnd);
-        svg.addEventListener('touchcancel', onTouchCancel);
+        function on(event, handler) {
+          svg.addEventListener(event, handler);
+        }
+
+        on('mousedown', onMouseDown);
+        on('mouseup', onMouseUp);
+        on('mousemove', onMouseMove);
+        on('touchstart', onTouchStart);
+        on('touchmove', onTouchMove);
+        on('touchend', onTouchEnd);
+        on('touchcancel', onTouchCancel);
       });
 
 
@@ -145,11 +149,18 @@
 
       function onMouseDown(event) {
         if (event.button === 0) {
-          downPosition = position(event, svg);
-          rect.attr(getRect(downPosition, downPosition));
-          show(rect);
-          event.preventDefault();
+          var point = position(event, svg);
+          if (isInRect(point, chartRect)) {
+            downPosition = point;
+            rect.attr(getRect(downPosition, downPosition));
+            show(rect);
+            event.preventDefault();
+          }
         }
+      }
+
+      function isInRect(point, rect) {
+        return point.x >= rect.x1 && point.x <= rect.x2 && point.y >= rect.y2 && point.y <= rect.y1;
       }
 
       var reset = function () {
@@ -164,7 +175,6 @@
           zoomIn(box);
           downPosition = null;
           hide(rect);
-          event.preventDefault();
         }
         else if (options.resetOnRightMouseBtn && event.button === 2) {
           reset();
@@ -174,10 +184,10 @@
 
       function zoomIn(rect) {
         if (rect.width > 5 && rect.height > 5) {
-            var x1 = rect.x - chartRect.x1;
-            var x2 = x1 + rect.width;
-            var y2 = chartRect.y1 - rect.y;
-            var y1 = y2 - rect.height;
+            var x1 = Math.max(0, rect.x - chartRect.x1);
+            var x2 = Math.min(chartRect.width(), x1 + rect.width);
+            var y2 = Math.min(chartRect.height(), chartRect.y1 - rect.y);
+            var y1 = Math.max(0, y2 - rect.height);
 
             chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
             chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
@@ -190,8 +200,10 @@
       function onMouseMove(event) {
         if (downPosition) {
           var point = position(event, svg);
-          rect.attr(getRect(downPosition, point));
-          event.preventDefault();
+          if (isInRect(point, chartRect)) {
+            rect.attr(getRect(downPosition, point));
+            event.preventDefault();
+          }
         }
       }
     };

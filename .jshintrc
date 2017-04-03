@@ -27,6 +27,7 @@
     "SVG": false,
     "Snap": false,
     "Foundation": false,
-    "Chartist": false
+    "Chartist": false,
+    "define": false
   }
 }

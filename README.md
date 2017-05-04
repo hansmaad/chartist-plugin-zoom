@@ -2,6 +2,8 @@
 
 Please visit http://gionkunz.github.io/chartist-js/plugins.html for more information.
 
+Currently only axes of type AutoScaleAxis are supported!
+
 ## Available options and their defaults
 
 ```javascript

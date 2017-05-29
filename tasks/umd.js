@@ -15,6 +15,12 @@ module.exports = function (grunt) {
       src: '<%= pkg.config.src %>/scripts/chartist-plugin-zoom.js',
       dest: '<%= pkg.config.dist %>/chartist-plugin-zoom.js',
       objectToExport: 'Chartist.plugins.zoom',
+      deps: {
+        default: ['Chartist'],
+        amd: ['chartist'],
+        cjs: ['chartist'],
+        global: ['Chartist']
+      },
       indent: '  '
     }
   };

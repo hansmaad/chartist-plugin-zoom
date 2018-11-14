@@ -8,14 +8,14 @@
   var defaultOptions = {
     // onZoom
     // resetOnRightMouseBtn
-    pointClipOffset: 5
+    pointClipOffset: 5,
+    noClipY: false
   };
 
   Chartist.plugins = Chartist.plugins || {};
   Chartist.plugins.zoom = function (options) {
-
     options = Chartist.extend({}, defaultOptions, options);
-
+    
     return function zoom(chart) {
 
       if (!(chart instanceof Chartist.Line)) {
@@ -205,66 +205,68 @@
           }
         }
       }
+      
+      function hide(rect) {
+        rect.attr({ style: 'display:none' });
+      }
+      
+      function show(rect) {
+        rect.attr({ style: 'display:block' });
+      }
+      
+      function getRect(firstPoint, secondPoint) {
+        var x = firstPoint.x;
+        var y = firstPoint.y;
+        var width = secondPoint.x - x;
+        var height = secondPoint.y - y;
+        if(options.noClipY){
+          y = chartRect.y2;
+          height = chartRect.y1 - y;
+        }
+        if (width < 0) {
+          width = -width;
+          x = secondPoint.x;
+        }
+        if (height < 0) {
+          height = -height;
+          y = secondPoint.y;
+        }
+        return {
+          x: x,
+          y: y,
+          width: width,
+          height: height
+        };
+      }
+      
+      function position(event, svg) {
+        return transform(event.clientX, event.clientY, svg);
+      }
+      
+      function transform(x, y, svgElement) {
+        var svg = svgElement.tagName === 'svg' ? svgElement : svgElement.ownerSVGElement;
+        var matrix = svg.getScreenCTM();
+        var point = svg.createSVGPoint();
+        point.x = x;
+        point.y = y;
+        point = point.matrixTransform(matrix.inverse());
+        return point || { x: 0, y: 0 };
+      }
+      
+      function project(value, axis) {
+        var max = axis.bounds.max;
+        var min = axis.bounds.min;
+        if (axis.scale && axis.scale.type === 'log') {
+          var base = axis.scale.base;
+          return Math.pow(base,
+              value * baseLog(max / min, base) / axis.axisLength) * min;
+        }
+        return (value * axis.bounds.range / axis.axisLength) + min;
+      }
+      
+      function baseLog(val, base) {
+        return Math.log(val) / Math.log(base);
+      }
     };
-
   };
-
-  function hide(rect) {
-    rect.attr({ style: 'display:none' });
-  }
-
-  function show(rect) {
-    rect.attr({ style: 'display:block' });
-  }
-
-  function getRect(firstPoint, secondPoint) {
-    var x = firstPoint.x;
-    var y = firstPoint.y;
-    var width = secondPoint.x - x;
-    var height = secondPoint.y - y;
-    if (width < 0) {
-      width = -width;
-      x = secondPoint.x;
-    }
-    if (height < 0) {
-      height = -height;
-      y = secondPoint.y;
-    }
-    return {
-      x: x,
-      y: y,
-      width: width,
-      height: height
-    };
-  }
-
-  function position(event, svg) {
-    return transform(event.clientX, event.clientY, svg);
-  }
-
-  function transform(x, y, svgElement) {
-    var svg = svgElement.tagName === 'svg' ? svgElement : svgElement.ownerSVGElement;
-    var matrix = svg.getScreenCTM();
-    var point = svg.createSVGPoint();
-    point.x = x;
-    point.y = y;
-    point = point.matrixTransform(matrix.inverse());
-    return point || { x: 0, y: 0 };
-  }
-
-  function project(value, axis) {
-    var max = axis.bounds.max;
-    var min = axis.bounds.min;
-    if (axis.scale && axis.scale.type === 'log') {
-      var base = axis.scale.base;
-      return Math.pow(base,
-        value * baseLog(max / min, base) / axis.axisLength) * min;
-    }
-    return (value * axis.bounds.range / axis.axisLength) + min;
-  }
-
-  function baseLog(val, base) {
-    return Math.log(val) / Math.log(base);
-  }
-
 } (window, document, Chartist));

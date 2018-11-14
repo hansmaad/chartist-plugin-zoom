@@ -12,6 +12,7 @@ var defaultOptions = {
                       // resetFnc() will reset zoom.
   pointClipOffset: 5  // Offset from chart rect that will be used for the point clip mask.
                       // Should be equal to the radius of .ct-point points.
+  noClipY: false      // Only clip the x axis.
 };
 ```
 

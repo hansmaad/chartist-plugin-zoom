@@ -1,6 +1,6 @@
 /**
  * Chartist.js zoom plugin.
- *
+ * 
  */
 (function (window, document, Chartist) {
   'use strict';
@@ -9,7 +9,8 @@
     // onZoom
     // resetOnRightMouseBtn
     pointClipOffset: 5,
-    noClipY: false
+    noClipY: false,
+    autoZoomY: true,
   };
 
   Chartist.plugins = Chartist.plugins || {};
@@ -17,7 +18,6 @@
     options = Chartist.extend({}, defaultOptions, options);
     
     return function zoom(chart) {
-
       if (!(chart instanceof Chartist.Line)) {
         return;
       }
@@ -28,6 +28,7 @@
       var ongoingTouches = [];
 
       chart.on('draw', function (data) {
+        //console.log(data);
         var type = data.type;
         var mask = type === 'point' ? 'point-mask' : 'line-mask';
         if (type === 'line' || type === 'bar' || type === 'area' || type === 'point') {
@@ -191,6 +192,24 @@
             chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
             chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
 
+            if(options.noClipY && options.autoZoomY){
+              var x_low = chart.options.axisX.highLow.low;
+              var x_high = chart.options.axisX.highLow.high;
+              var max_y = null;
+              var min_y = null;
+              var series = chart.data.series;
+              for(var i=0; i < series.length; ++i){
+                var points = series[i].data;
+                var l = binarySearch_x(points, x_low) + 1;
+                for(var j=l; j < points.length; ++j){
+                  if(points[j].x > x_high && max_y !== null) break;
+                  if(points[j].y > max_y || max_y === null) max_y = points[j].y;
+                  //if(points[j].y < min_y || min_y === null) min_y = points[j].y; // FIXME: with upper and lower bounds strange things may happen when only one point is visible.
+                }
+              }
+              chart.options.axisY.highLow.high = max_y === min_y ? max_y + 1 : max_y;
+              //chart.options.axisY.highLow.low = max_y === min_y ? min_y - 1 : min_y;
+            }
             chart.update(chart.data, chart.options);
             onZoom && onZoom(chart, reset);
           }
@@ -266,6 +285,22 @@
       
       function baseLog(val, base) {
         return Math.log(val) / Math.log(base);
+      }
+      
+      function binarySearch_x(ar, el) {
+        var m = 0;
+        var n = ar.length - 1;
+        while (m <= n) {
+          var k = (n + m) >> 1;
+          if (el > ar[k].x) {
+            m = k + 1;
+          } else if(el < ar[k].x) {
+            n = k - 1;
+          } else {
+            return k;
+          }
+        }
+        return m - 1;
       }
     };
   };

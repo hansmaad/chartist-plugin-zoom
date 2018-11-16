@@ -13,6 +13,7 @@ var defaultOptions = {
   pointClipOffset: 5  // Offset from chart rect that will be used for the point clip mask.
                       // Should be equal to the radius of .ct-point points.
   noClipY: false      // Only clip the x axis.
+  autoZoomY: false    // Auto zoom y axis. Can be set to true/false or object {high: false/true, low: false/true}.
 };
 ```
 

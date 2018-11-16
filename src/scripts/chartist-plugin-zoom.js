@@ -10,7 +10,7 @@
     // resetOnRightMouseBtn
     pointClipOffset: 5,
     noClipY: false,
-    autoZoomY: true,
+    autoZoomY: {high: false, low: false},
   };
 
   Chartist.plugins = Chartist.plugins || {};
@@ -26,9 +26,11 @@
       var downPosition;
       var onZoom = options.onZoom;
       var ongoingTouches = [];
-
+      if(options.autoZoomY === true){
+        options.autoZoomY = {high: true, low: true};
+      }
+      
       chart.on('draw', function (data) {
-        //console.log(data);
         var type = data.type;
         var mask = type === 'point' ? 'point-mask' : 'line-mask';
         if (type === 'line' || type === 'bar' || type === 'area' || type === 'point') {
@@ -192,7 +194,7 @@
             chart.options.axisX.highLow = { low: project(x1, axisX), high: project(x2, axisX) };
             chart.options.axisY.highLow = { low: project(y1, axisY), high: project(y2, axisY) };
 
-            if(options.noClipY && options.autoZoomY){
+            if(options.noClipY && (options.autoZoomY.high || options.autoZoomY.low)){
               var x_low = chart.options.axisX.highLow.low;
               var x_high = chart.options.axisX.highLow.high;
               var max_y = null;
@@ -202,13 +204,19 @@
                 var points = series[i].data;
                 var l = binarySearch_x(points, x_low) + 1;
                 for(var j=l; j < points.length; ++j){
-                  if(points[j].x > x_high && max_y !== null) break;
-                  if(points[j].y > max_y || max_y === null) max_y = points[j].y;
-                  //if(points[j].y < min_y || min_y === null) min_y = points[j].y; // FIXME: with upper and lower bounds strange things may happen when only one point is visible.
+                  if(points[j].x > x_high) break;
+                  if(points[j].y > max_y || min_y == null) max_y = points[j].y;
+                  if(points[j].y < min_y || min_y == null) min_y = points[j].y;
+                }
+                var prev_j = Math.max(l-1, 0);
+                if(min_y === max_y){
+                  max_y = Math.max(points[l].y, points[prev_j].y);
+                  min_y = Math.min(points[l].y, points[prev_j].y);
+                  if(min_y == max_y) max_y = min_y + 0.1; // prevents chartist from creating NaNs when range == 0 
                 }
               }
-              chart.options.axisY.highLow.high = max_y === min_y ? max_y + 1 : max_y;
-              //chart.options.axisY.highLow.low = max_y === min_y ? min_y - 1 : min_y;
+              if( options.autoZoomY.high ) chart.options.axisY.highLow.high = max_y; 
+              if( options.autoZoomY.low ) chart.options.axisY.highLow.low = min_y;
             }
             chart.update(chart.data, chart.options);
             onZoom && onZoom(chart, reset);
@@ -238,15 +246,15 @@
         var y = firstPoint.y;
         var width = secondPoint.x - x;
         var height = secondPoint.y - y;
-        if(options.noClipY){
-          y = chartRect.y2;
-          height = chartRect.y1 - y;
-        }
         if (width < 0) {
           width = -width;
           x = secondPoint.x;
         }
-        if (height < 0) {
+        if(options.noClipY){
+          y = chartRect.y2;
+          height = chartRect.y1 - y;
+        }
+        else if (height < 0) {
           height = -height;
           y = secondPoint.y;
         }

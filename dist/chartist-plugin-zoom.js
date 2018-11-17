@@ -269,14 +269,16 @@
     }
 
     function project(value, axis) {
-      var max = axis.bounds.max;
-      var min = axis.bounds.min;
+      var bounds = axis.bounds || axis.range;
+      var max = bounds.max;
+      var min = bounds.min;
       if (axis.scale && axis.scale.type === 'log') {
         var base = axis.scale.base;
         return Math.pow(base,
           value * baseLog(max / min, base) / axis.axisLength) * min;
       }
-      return (value * axis.bounds.range / axis.axisLength) + min;
+      var range = bounds.range || (max - min);
+      return (value * range / axis.axisLength) + min;
     }
 
     function baseLog(val, base) {

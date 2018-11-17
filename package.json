@@ -33,13 +33,14 @@
   "devDependencies": {
     "chartist": "~0.9.7",
     "grunt": "^0.4.5",
+    "grunt-cli": "^1.3.2",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-copy": "^0.7.0",
     "grunt-contrib-jasmine": "~0.8.1",
     "grunt-contrib-jshint": "~0.10.0",
     "grunt-contrib-uglify": "^0.6.0",
-    "grunt-umd": "~2.2.1",
     "grunt-newer": "^0.8.0",
+    "grunt-umd": "~2.2.1",
     "jasmine-jquery": "~2.0.6",
     "jshint-stylish": "~1.0.0",
     "load-grunt-config": "^0.16.0",
@@ -50,6 +51,7 @@
   },
   "scripts": {
     "test": "grunt test",
+    "build": "grunt build",
     "start": "http-server"
   },
   "config": {

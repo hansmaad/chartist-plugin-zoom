@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <title>chartist zoom</title>
-  <link rel="stylesheet" href="bower_components/chartist/dist/chartist.min.css">
+  <link rel="stylesheet" href="node_modules/chartist/dist/chartist.min.css">
   <style>
     .ct-zoom-rect {
       fill: rgba(200, 100, 100, 0.3);
@@ -24,9 +24,11 @@
   <h1>Chartist Zoom Plugin</h1>
   <p>Use left mouse button to drag a zoom box. Reset zoom with right mouse button.</p>
   <p><a id="reset" href="#" style="display:none" onclick='return reset()'>Reset</a></p>
+  
   <div id="c1" class="ct-chart ct-golden-section" style="max-width:800px"></div>
-  <div id="c2" class="fixed ct-chart ct-golden-section" style="max-width:800px"></div>
-  <script src="bower_components/chartist/dist/chartist.js"></script>
+  <div id="c2" class="fixed ct-chart ct-golden-section" style="max-width:600px"></div>
+
+  <script src="node_modules/chartist/dist/chartist.js"></script>
   <script src="dist/chartist-plugin-zoom.js"></script>
 
   <script>

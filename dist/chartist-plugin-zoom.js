@@ -45,9 +45,8 @@
 
         chart.on('draw', function (data) {
           var type = data.type;
-          var mask = type === 'point' ? 'point-mask' : 'line-mask';
-          if (type === 'line' || type === 'bar' || type === 'area' || type === 'point') {
-            data.element.attr({ 'clip-path': 'url(#' + mask + ')' });
+          if (type === 'line' || type === 'bar' || type === 'area') {
+            data.element.attr({ 'clip-path': 'url(#line-mask)' });
           }
         });
 
@@ -83,6 +82,10 @@
           }
           addMask('line-mask', 0);
           addMask('point-mask', options.pointClipOffset);
+          var series = chart.svg.querySelectorAll("." + data.options.classNames.series).svgElements;
+          for(var i=0; i < series.length; ++i){
+            series[i].attr({'clip-path': 'url(#point-mask)'});
+          }
 
           function on(event, handler) {
             svg.addEventListener(event, handler);

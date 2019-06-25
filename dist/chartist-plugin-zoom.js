@@ -82,7 +82,8 @@
           }
           addMask('line-mask', 0);
           addMask('point-mask', options.pointClipOffset);
-          var series = chart.svg.querySelectorAll("." + data.options.classNames.series).svgElements;
+          var series = chart.svg.querySelectorAll("." + data.options.classNames.series);
+          series = series? series.svgElements : [];
           for(var i=0; i < series.length; ++i){
             series[i].attr({'clip-path': 'url(#point-mask)'});
           }

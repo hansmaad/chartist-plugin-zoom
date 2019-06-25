@@ -24,7 +24,7 @@
   <h1>Chartist Zoom Plugin</h1>
   <p>Use left mouse button to drag a zoom box. Reset zoom with right mouse button.</p>
   <p><a id="reset" href="#" style="display:none" onclick='return reset()'>Reset</a></p>
-  
+
   <div id="c1" class="ct-chart ct-golden-section" style="max-width:800px"></div>
   <div id="c2" class="fixed ct-chart ct-golden-section" style="max-width:600px"></div>
 
@@ -40,10 +40,10 @@
         {x: 4, y: 66},
         {x: 5, y: 44},
         {x: 6, y: 22},
-        
+
       ]]
       };
-      
+
     var options = {
       chartPadding: {
         top: 50,
@@ -63,19 +63,19 @@
     };
     var chart1 = Chartist.Line('#c1', data, options);
     var chart2 = Chartist.Line('#c2', data, options);
-    
+
     var resetFnc;
     function onZoom(chart, reset) {
       document.getElementById('reset').style.display = 'inline';
-      resetFnc = reset;					
+      resetFnc = reset;
     }
-    
+
     function reset() {
       resetFnc && resetFnc();
       resetFnc = null;
       document.getElementById('reset').style.display = 'none';
     }
-    
+
   </script>
 </body>
 </html>

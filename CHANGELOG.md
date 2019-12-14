@@ -1,3 +1,7 @@
+# [0.6.0]() (2019-12-14)
+
+* Added `zoomActivationThreshold` option
+
 # [0.5.1]() (2019-06-12)
 
 * Fix bug with empty series

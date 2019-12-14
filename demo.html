@@ -58,7 +58,10 @@
         type: Chartist.AutoScaleAxis
       },
       plugins : [
-        Chartist.plugins.zoom({ onZoom : onZoom, pointClipOffset : 10 })
+        Chartist.plugins.zoom({
+          onZoom: onZoom,
+          pointClipOffset: 10,
+        })
       ]
     };
     var chart1 = Chartist.Line('#c1', data, options);

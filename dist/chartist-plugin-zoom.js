@@ -24,13 +24,17 @@
     var defaultOptions = {
       // onZoom
       // resetOnRightMouseBtn
-      pointClipOffset: 5
+      pointClipOffset: 5,
+      zoomActivationThreshold: { x: 5, y: 5 },
     };
 
     Chartist.plugins = Chartist.plugins || {};
     Chartist.plugins.zoom = function (options) {
 
       options = Chartist.extend({}, defaultOptions, options);
+      var threshold = options.zoomActivationThreshold;
+      options.zoomActivationThreshold =
+        typeof options.zoomActivationThreshold === 'number' ? { x: threshold, y: threshold } : threshold;
 
       return function zoom(chart) {
 
@@ -202,7 +206,8 @@
         }
 
         function zoomIn(rect) {
-          if (rect.width > 5 && rect.height > 5) {
+
+          if (rect.width > options.zoomActivationThreshold.x && rect.height > options.zoomActivationThreshold.y) {
               var x1 = Math.max(0, rect.x - chartRect.x1);
               var x2 = Math.min(chartRect.width(), x1 + rect.width);
               var y2 = Math.min(chartRect.height(), chartRect.y1 - rect.y);
@@ -213,7 +218,7 @@
 
               chart.update(chart.data, chart.options);
               onZoom && onZoom(chart, reset);
-            }
+          }
         }
 
         function onMouseMove(event) {
